@@ -20,7 +20,7 @@ public class Herbivore extends Animal {
              case GOAT -> new Goat();
             default -> {
                 System.out.println("There is no such herbivore");
-                yield null;
+                yield null; // Optional<Livable>
             }
         };
     }

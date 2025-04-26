@@ -5,6 +5,7 @@ import plants.Plant;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Cell {
     private Coordinate coordinate;
@@ -13,8 +14,8 @@ public class Cell {
 
     public Cell(int x, int y) {
         this.coordinate = new Coordinate(x, y);
-        this.animals = new ArrayList<>();
-        this.plants = new ArrayList<>();
+        this.animals = new CopyOnWriteArrayList<>();
+        this.plants = new CopyOnWriteArrayList<>();
     }
 
     public Coordinate getCoordinate() {

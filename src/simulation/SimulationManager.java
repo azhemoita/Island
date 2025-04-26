@@ -63,7 +63,7 @@ public class SimulationManager {
                     }
                 }
 
-                for (int i = 0; i < random.nextInt(200 + 1); i++) {
+                for (int i = 0; i < random.nextInt( 200 + 1); i++) {
                     Plant plant = new Plant();
                     cell.addPlant(plant);
                 }
