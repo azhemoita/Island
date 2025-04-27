@@ -80,7 +80,7 @@ public class ConsoleOutputManager {
                 long bear = cell.getAnimals().stream().filter(livable -> livable instanceof Bear).count();
                 countOfBears += bear;
 
-                rowLines.get(0).append(String.format("(%d,%2d)+---------------------------------+ ", x, y));
+                rowLines.get(0).append(String.format(" (%d,%2d)+---------------------------------+ ", x, y));
                 rowLines.get(1).append(String.format("       | %s:%03d  %s:%03d  %s:%03d  %s:%03d | ",
                         Data.DUCK.getIcon(), ducks,
                         Data.WOLF.getIcon(), wolves,

@@ -3,11 +3,11 @@ package field;
 import factory.Livable;
 import plants.Plant;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Cell {
+    private Island island;
     private Coordinate coordinate;
     private List<Livable> animals;
     private List<Plant> plants;
@@ -18,8 +18,16 @@ public class Cell {
         this.plants = new CopyOnWriteArrayList<>();
     }
 
+    public Island getIsland() {
+        return island;
+    }
+
     public Coordinate getCoordinate() {
         return coordinate;
+    }
+
+    public void setCoordinate(Coordinate coordinate) {
+        this.coordinate = coordinate;
     }
 
     public void addAnimal(Livable animal) {

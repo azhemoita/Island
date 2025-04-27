@@ -5,6 +5,7 @@ import data.Data;
 import factory.Livable;
 import factory.Predator;
 import field.Cell;
+import field.Coordinate;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -78,7 +79,30 @@ public class Snake extends Predator implements Livable {
 
     @Override
     public void move() {
+        int maxSpeed = Data.SNAKE.getMaxSpeed();
+        int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
+        Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
 
+        if (speed == 0) return;
+
+        int x = currentCellCoordinate.getX();
+        int y = currentCellCoordinate.getY();
+
+        int dx = ThreadLocalRandom.current().nextInt(-speed, speed + 1);
+        int randomSign = ThreadLocalRandom.current().nextBoolean() ? 1 : -1;
+        int dy = (speed - Math.abs(dx)) * randomSign;
+
+        int newX = x + dx;
+        int newY = y + dy;
+
+        if (newX == x && newY == y) return;
+
+        if (currentCell.getIsland().isValidCoordinate(newX, newY)) {
+            Cell newCell = currentCell.getIsland().getCell(newX, newY);
+            currentCell.getAnimals().remove(this);
+            newCell.addAnimal(this);
+            currentCell = newCell;
+        }
     }
 
     @Override
