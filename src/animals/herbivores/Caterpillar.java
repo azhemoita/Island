@@ -8,6 +8,7 @@ import field.Coordinate;
 import plants.Plant;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -76,5 +77,15 @@ public class Caterpillar extends Herbivore implements Livable {
     @Override
     public void die() {
         currentCell.getAnimals().remove(this);
+    }
+
+    public Optional<Livable> getOffspring() {
+        long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
+
+        if (count >= 2 && count < Data.CATERPILLAR.getMaxQuantity()) {
+            return Optional.of(new Caterpillar());
+        }
+
+        return Optional.empty();
     }
 }

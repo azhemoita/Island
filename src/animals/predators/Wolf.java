@@ -7,6 +7,7 @@ import field.Cell;
 import field.Coordinate;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -157,5 +158,15 @@ public class Wolf implements Livable {
     @Override
     public void die() {
         currentCell.getAnimals().remove(this);
+    }
+
+    public Optional<Livable> getOffspring() {
+        long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
+
+        if (count >= 2 && count < Data.WOLF.getMaxQuantity()) {
+            return Optional.of(new Wolf());
+        }
+
+        return Optional.empty();
     }
 }
