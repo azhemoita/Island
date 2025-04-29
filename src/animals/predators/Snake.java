@@ -18,7 +18,12 @@ public class Snake extends Predator implements Livable {
     public static final int PROBABILITY_EATS_HAMSTER = 40;
     public static final int PROBABILITY_EATS_DUCK = 10;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.SNAKE.getWeight());
+    private final AtomicReference<Double> currentWeight;
+
+    public Snake(Cell currentCell) {
+        this.currentCell = currentCell;
+        this.currentWeight = new AtomicReference<>(Data.SNAKE.getWeight());
+    }
 
     public Cell getCurrentCell() {
         return currentCell;
@@ -115,7 +120,7 @@ public class Snake extends Predator implements Livable {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.SNAKE.getMaxQuantity()) {
-            return Optional.of(new Snake());
+            return Optional.of(new Snake(currentCell));
         }
 
         return Optional.empty();

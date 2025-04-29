@@ -16,7 +16,12 @@ public class Duck extends Herbivore implements Livable {
     public static final int PROBABILITY_EATS_CATERPILLAR = 90;
     public static final int PROBABILITY_EATS_PLANT = 100;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.DUCK.getWeight());
+    private final AtomicReference<Double> currentWeight;
+
+    public Duck(Cell currentCell) {
+        this.currentCell = currentCell;
+        this.currentWeight = new AtomicReference<>(Data.DUCK.getWeight());
+    }
 
     public Cell getCurrentCell() {
         return currentCell;
@@ -102,7 +107,7 @@ public class Duck extends Herbivore implements Livable {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.DUCK.getMaxQuantity()) {
-            return Optional.of(new Duck());
+            return Optional.of(new Duck(currentCell));
         }
 
         return Optional.empty();

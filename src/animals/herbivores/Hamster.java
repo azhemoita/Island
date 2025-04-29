@@ -16,7 +16,12 @@ public class Hamster extends Herbivore implements Livable {
     public static final int PROBABILITY_EATS_CATERPILLAR = 90;
     public static final int PROBABILITY_EATS_PLANT = 100;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.HAMSTER.getWeight());
+    private final AtomicReference<Double> currentWeight;
+
+    public Hamster(Cell currentCell) {
+        this.currentCell = currentCell;
+        this.currentWeight = new AtomicReference<>(Data.HAMSTER.getWeight());
+    }
 
     public Cell getCurrentCell() {
         return currentCell;
@@ -97,7 +102,7 @@ public class Hamster extends Herbivore implements Livable {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.HAMSTER.getMaxQuantity()) {
-            return Optional.of(new Hamster());
+            return Optional.of(new Hamster(currentCell));
         }
 
         return Optional.empty();

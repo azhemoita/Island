@@ -22,7 +22,12 @@ public class Wolf implements Livable {
     public static final int PROBABILITY_EATS_BUFFALO = 15;
     public static final int PROBABILITY_EATS_DUCK = 40;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.WOLF.getWeight());
+    private final AtomicReference<Double> currentWeight;
+
+    public Wolf(Cell currentCell) {
+        this.currentCell = currentCell;
+        this.currentWeight = new AtomicReference<>(Data.WOLF.getWeight());
+    }
 
     public Cell getCurrentCell() {
         return currentCell;
@@ -164,7 +169,7 @@ public class Wolf implements Livable {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.WOLF.getMaxQuantity()) {
-            return Optional.of(new Wolf());
+            return Optional.of(new Wolf(currentCell));
         }
 
         return Optional.empty();

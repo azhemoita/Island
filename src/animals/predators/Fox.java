@@ -18,7 +18,12 @@ public class Fox extends Predator implements Livable {
     public static final int PROBABILITY_EATS_DUCK = 60;
     public static final int PROBABILITY_EATS_CATERPILLAR = 40;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.FOX.getWeight());
+    private final AtomicReference<Double> currentWeight;
+
+    public Fox(Cell currentCell) {
+        this.currentCell = currentCell;
+        this.currentWeight = new AtomicReference<>(Data.FOX.getWeight());
+    }
 
     public Cell getCurrentCell() {
         return currentCell;
@@ -115,7 +120,7 @@ public class Fox extends Predator implements Livable {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.FOX.getMaxQuantity()) {
-            return Optional.of(new Fox());
+            return Optional.of(new Fox(currentCell));
         }
 
         return Optional.empty();

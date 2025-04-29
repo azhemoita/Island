@@ -18,7 +18,12 @@ public class Eagle extends Predator implements Livable {
     public static final int PROBABILITY_EATS_HAMSTER = 90;
     public static final int PROBABILITY_EATS_DUCK = 80;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.EAGLE.getWeight());
+    private final AtomicReference<Double> currentWeight;
+
+    public Eagle(Cell currentCell) {
+        this.currentCell = currentCell;
+        this.currentWeight = new AtomicReference<>(Data.EAGLE.getWeight());
+    }
 
     public Cell getCurrentCell() {
         return currentCell;
@@ -115,7 +120,7 @@ public class Eagle extends Predator implements Livable {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.EAGLE.getMaxQuantity()) {
-            return Optional.of(new Eagle());
+            return Optional.of(new Eagle(currentCell));
         }
 
         return Optional.empty();

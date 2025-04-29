@@ -31,9 +31,8 @@ public class Cell {
     }
 
     public void addAnimal(Livable animal) {
-        if (animal != null) {
+            animal.setCurrentCell(this);
             animals.add(animal);
-        }
     }
 
     public void addPlant(Plant plant) {

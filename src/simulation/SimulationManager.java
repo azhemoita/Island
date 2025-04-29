@@ -15,6 +15,7 @@ import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Класс для:
@@ -25,24 +26,39 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class SimulationManager {
+    static volatile boolean isRunning = false;
     private final Island island;
     private final ScheduledExecutorService scheduler;
+    private ConsoleOutputManager print;
+    int countOfThreads = Runtime.getRuntime().availableProcessors();
+    public static AtomicInteger dayCounter = new AtomicInteger(0);
 
     public SimulationManager(int width, int height) {
         this.island = new Island(width, height);
-        this.scheduler = Executors.newScheduledThreadPool(1);
+        this.scheduler = Executors.newScheduledThreadPool(countOfThreads);
+        this.print = new ConsoleOutputManager(this.island);
     }
 
     public void startSimulation() {
-//        scheduler.scheduleAtFixedRate(this::startSimulation, 0, 1, TimeUnit.SECONDS);
-        new ConsoleOutputManager(this.island).printIslandState();
+        if (isRunning) return;
+
+        isRunning = true;
+
+        scheduler.scheduleAtFixedRate(this::runSimulationTick, 1, 2, TimeUnit.SECONDS);
+        print.printIslandState();
     }
 
     private void runSimulationTick() {
-        // логика одно такта симуляции
+        for (Cell[] row : island.getCells()) {
+            for (Cell cell : row) {
+                cell.getAnimals().forEach(Livable::move);
+            }
+        }
+        print.printIslandState();
     }
 
     public void stopSimulation() {
+        isRunning = false;
         scheduler.shutdown();
     }
 
@@ -58,7 +74,7 @@ public class SimulationManager {
                 for (Data animal : Data.values()) {
                     int i = random.nextInt(animal.getMaxQuantity() + 1);
                     for (int j = 0; j < i; j++) {
-                        Livable newAnimal = AnimalFactory.createAnimal(animal);
+                        Livable newAnimal = AnimalFactory.createAnimal(animal, cell);
                         cell.addAnimal(newAnimal);
                     }
                 }

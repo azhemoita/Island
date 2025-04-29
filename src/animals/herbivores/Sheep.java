@@ -15,7 +15,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Sheep extends Herbivore implements Livable {
     public static final int PROBABILITY_EATS_PLANT = 100;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.SHEEP.getWeight());
+    private final AtomicReference<Double> currentWeight;
+
+    public Sheep(Cell currentCell) {
+        this.currentCell = currentCell;
+        this.currentWeight = new AtomicReference<>(Data.SHEEP.getWeight());
+    }
 
     public Cell getCurrentCell() {
         return currentCell;
@@ -83,7 +88,7 @@ public class Sheep extends Herbivore implements Livable {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.SHEEP.getMaxQuantity()) {
-            return Optional.of(new Sheep());
+            return Optional.of(new Sheep(currentCell));
         }
 
         return Optional.empty();

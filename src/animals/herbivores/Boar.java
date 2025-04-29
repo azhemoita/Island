@@ -17,18 +17,26 @@ public class Boar extends Herbivore implements Livable {
     public static final int PROBABILITY_EATS_CATERPILLAR = 90;
     public static final int PROBABILITY_EATS_PLANT = 100;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.BOAR.getWeight());
+    private AtomicReference<Double> currentWeight;
+
+    public Boar(Cell currentCell) {
+        this.currentCell = currentCell;
+        this.currentWeight = new AtomicReference<>(Data.BOAR.getWeight());
+    }
+
 
     public Cell getCurrentCell() {
         return currentCell;
     }
 
+    // Делаем так чтобы кабан знал в какой ячейке он находится
     public void setCurrentCell(Cell currentCell) {
         this.currentCell = currentCell;
     }
 
     @Override
     public void eat() {
+        System.out.println("Кабан ест...");
         List<Livable> animals = currentCell.getAnimals();
         List<Plant> plants = currentCell.getPlants();
 
@@ -72,6 +80,7 @@ public class Boar extends Herbivore implements Livable {
 
     @Override
     public void move() {
+        System.out.println("Кабан передвигается...");
         int maxSpeed = Data.BOAR.getMaxSpeed();
         int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
         Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
@@ -100,14 +109,17 @@ public class Boar extends Herbivore implements Livable {
 
     @Override
     public void die() {
+        System.out.println("Кабан умирает...");
         currentCell.getAnimals().remove(this);
     }
 
     public Optional<Livable> getOffspring() {
+        System.out.println("Количество кабанов увеличивается...");
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
+        // count >= 2 - Исключаем митоз
         if (count >= 2 && count < Data.BOAR.getMaxQuantity()) {
-            return Optional.of(new Boar());
+            return Optional.of(new Boar(currentCell));
         }
 
         return Optional.empty();

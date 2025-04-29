@@ -3,14 +3,16 @@ package factory;
 import animals.herbivores.*;
 import animals.predators.*;
 import data.Data;
+import field.Cell;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class AnimalFactory {
-    private static final Map<Data, Supplier<Livable>> animalSuppliers = new HashMap<>();
-
+    private static final Map<Data, Function<Cell, Livable>> animalSuppliers = new HashMap<>();
+    private static Cell cell;
 
     static {
         animalSuppliers.put(Data.DUCK, Duck::new);
@@ -30,10 +32,12 @@ public class AnimalFactory {
         animalSuppliers.put(Data.BEAR, Bear::new);
     }
 
-    public static Livable createAnimal(Data animalName) throws IllegalAccessException {
-        Supplier<Livable> supplier = animalSuppliers.get(animalName);
-        if (supplier != null) {
-            return supplier.get();
+    public static Livable createAnimal(Data animalName, Cell cell) throws IllegalAccessException {
+        Function<Cell, Livable> creator = animalSuppliers.get(animalName);
+        if (creator != null) {
+            Livable animal = creator.apply(cell);
+            cell.addAnimal(animal);
+            return animal;
         }
         throw new IllegalAccessException("Unknown animal: " + animalName);
     }

@@ -24,7 +24,12 @@ public class Bear extends Predator implements Livable {
     public static final int PROBABILITY_EATS_BUFFALO = 50;
     public static final int PROBABILITY_EATS_DUCK = 10;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.BEAR.getWeight());
+    private final AtomicReference<Double> currentWeight;
+
+    public Bear(Cell currentCell) {
+        this.currentCell = currentCell;
+        this.currentWeight = new AtomicReference<>(Data.BEAR.getWeight());
+    }
 
     public Cell getCurrentCell() {
         return currentCell;
@@ -175,7 +180,7 @@ public class Bear extends Predator implements Livable {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.BEAR.getMaxQuantity()) {
-            return Optional.of(new Bear());
+            return Optional.of(new Bear(currentCell));
         }
 
         return Optional.empty();
