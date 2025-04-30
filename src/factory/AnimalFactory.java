@@ -11,7 +11,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class AnimalFactory {
-    private static final Map<Data, Function<Cell, Livable>> animalSuppliers = new HashMap<>();
+    private static final Map<Data, Supplier<Livable>> animalSuppliers = new HashMap<>();
     private static Cell cell;
 
     static {
@@ -32,13 +32,28 @@ public class AnimalFactory {
         animalSuppliers.put(Data.BEAR, Bear::new);
     }
 
-    public static Livable createAnimal(Data animalName, Cell cell) throws IllegalAccessException {
-        Function<Cell, Livable> creator = animalSuppliers.get(animalName);
-        if (creator != null) {
-            Livable animal = creator.apply(cell);
-            cell.addAnimal(animal);
-            return animal;
-        }
-        throw new IllegalAccessException("Unknown animal: " + animalName);
+    public static Livable createAnimal(Data animalType) {
+        Livable animal = switch (animalType) {
+            case BOAR -> new Boar();
+            case BUFFALO -> new Buffalo();
+            case CATERPILLAR -> new Caterpillar();
+            case DEER -> new Deer();
+            case DUCK -> new Duck();
+            case GOAT -> new Goat();
+            case HAMSTER -> new Hamster();
+            case HARE -> new Hare();
+            case HORSE -> new Horse();
+            case SHEEP -> new Sheep();
+            case BEAR -> new Bear();
+            case EAGLE -> new Eagle();
+            case FOX -> new Fox();
+            case SNAKE -> new Snake();
+            case WOLF -> new Wolf();
+            default -> throw new IllegalArgumentException("Unknown animal: " + animalType);
+        };
+        // Инициализация текущего веса
+//        animal.getCurrentWeight().set(animalType.getWeight());
+        animal.setCurrentWeight(animal.getCurrentWeight());
+        return animal;
     }
 }

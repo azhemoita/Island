@@ -11,6 +11,7 @@ import view.ConsoleOutputManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SimulationManager {
     static volatile boolean isRunning = false;
     private final Island island;
-    private final ScheduledExecutorService scheduler;
+    private final ScheduledExecutorService scheduler; //= Executors.newScheduledThreadPool(2); // 2 потока
     private ConsoleOutputManager print;
     int countOfThreads = Runtime.getRuntime().availableProcessors();
     public static AtomicInteger dayCounter = new AtomicInteger(0);
@@ -49,12 +50,26 @@ public class SimulationManager {
     }
 
     private void runSimulationTick() {
+        // Обрабатываем все ячейки
         for (Cell[] row : island.getCells()) {
             for (Cell cell : row) {
-                cell.getAnimals().forEach(Livable::move);
+                // Для каждого животного в ячейке
+                cell.getAnimals().forEach(animal -> {
+                    animal.eat();
+                    animal.move();
+                    // Размножение
+                    Optional<Livable> offspring = animal.getOffspring();
+                    offspring.ifPresent(child -> {
+                        child.setCurrentCell(cell);
+                        cell.addAnimal(child);
+                    });
+                    // Проверка на смерть от голода
+                    if (animal.getCurrentWeight() < animal.getData().getWeight() * 0.1) {
+                        animal.die();
+                    }
+                });
             }
         }
-        print.printIslandState();
     }
 
     public void stopSimulation() {
@@ -63,25 +78,39 @@ public class SimulationManager {
     }
 
     public void initializeIsland() throws IllegalAccessException {
+        // Создаем ячейки и связываем их с островом
+        for (int x = 0; x < island.getWidth(); x++) {
+            for (int y = 0; y < island.getHeight(); y++) {
+                Cell cell = new Cell(x, y, island);
+                island.setCell(x, y, cell);
+            }
+        }
         distributeEntities();
     }
 
-    private void distributeEntities() throws IllegalAccessException {
+    private void distributeEntities() {
         Random random = new Random();
         for (Cell[] row : island.getCells()) {
             for (Cell cell : row) {
-
-                for (Data animal : Data.values()) {
-                    int i = random.nextInt(animal.getMaxQuantity() + 1);
-                    for (int j = 0; j < i; j++) {
-                        Livable newAnimal = AnimalFactory.createAnimal(animal, cell);
-                        cell.addAnimal(newAnimal);
+                // Добавляем животных
+                for (Data animalType : Data.values()) {
+                    int maxPerCell = animalType.getMaxQuantity();
+                    int count = random.nextInt(maxPerCell + 1); // Случайное количество
+                    for (int i = 0; i < count; i++) {
+                        try {
+                            Livable animal = AnimalFactory.createAnimal(animalType);
+                            animal.setCurrentCell(cell); // Важно!
+                            cell.addAnimal(animal);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 
-                for (int i = 0; i < random.nextInt( 200 + 1); i++) {
-                    Plant plant = new Plant();
-                    cell.addPlant(plant);
+                // Добавляем растения
+                int plantsCount = random.nextInt(200 + 1);
+                for (int i = 0; i < plantsCount; i++) {
+                    cell.addPlant(new Plant());
                 }
             }
         }

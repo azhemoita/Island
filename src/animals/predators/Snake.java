@@ -18,19 +18,31 @@ public class Snake extends Predator implements Livable {
     public static final int PROBABILITY_EATS_HAMSTER = 40;
     public static final int PROBABILITY_EATS_DUCK = 10;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight;
+    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.SNAKE.getWeight());
 
-    public Snake(Cell currentCell) {
-        this.currentCell = currentCell;
-        this.currentWeight = new AtomicReference<>(Data.SNAKE.getWeight());
+    @Override
+    public Data getData() {
+        return Data.SNAKE;
     }
 
-    public Cell getCurrentCell() {
+    @Override
+    public Cell getCurrentcell() {
         return currentCell;
     }
 
-    public void setCurrentCell(Cell newCell) {
-        this.currentCell = newCell;
+    @Override
+    public void setCurrentCell(Cell cell) {
+        this.currentCell = cell;
+    }
+
+    @Override
+    public double getCurrentWeight() {
+        return currentWeight.get();
+    }
+
+    @Override
+    public void setCurrentWeight(double currentWeight) {
+        this.currentWeight.set(currentWeight);
     }
 
     @Override
@@ -85,6 +97,13 @@ public class Snake extends Predator implements Livable {
 
     @Override
     public void move() {
+        System.out.println("Змея передвигается...");
+
+        if (currentCell == null) {
+            System.out.println("У змеи нет клетки!");
+            return;
+        }
+
         int maxSpeed = Data.SNAKE.getMaxSpeed();
         int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
         Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
@@ -109,18 +128,37 @@ public class Snake extends Predator implements Livable {
             newCell.addAnimal(this);
             currentCell = newCell;
         }
+
+        Cell newCell = currentCell.getIsland().getCell(newX, newY);
+
+        // Синхронизация для атомарного перемещения
+        synchronized (currentCell) {
+            synchronized (newCell) {
+                if (currentCell.getAnimals().contains(this)) {
+                    currentCell.removeAnimal(this);
+                    newCell.addAnimal(this);
+                    this.currentCell = newCell;
+                    System.out.println("Snake moved to (" + newX + ", " + newY + ")");
+                }
+            }
+        }
     }
 
     @Override
     public void die() {
-        currentCell.getAnimals().remove(this);
+        if (currentCell != null) {
+            currentCell.removeAnimal(this);
+            System.out.println("Snake died at (" + currentCell.getCoordinate().getX()
+                    + ", " + currentCell.getCoordinate().getY() + ")");
+        }
     }
 
+    @Override
     public Optional<Livable> getOffspring() {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.SNAKE.getMaxQuantity()) {
-            return Optional.of(new Snake(currentCell));
+            return Optional.of(new Snake());
         }
 
         return Optional.empty();

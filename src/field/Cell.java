@@ -9,13 +9,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Cell {
     private Island island;
     private Coordinate coordinate;
-    private List<Livable> animals;
-    private List<Plant> plants;
+    private final List<Livable> animals = new CopyOnWriteArrayList<>();
+    private final List<Plant> plants = new CopyOnWriteArrayList<>();
 
-    public Cell(int x, int y) {
+    public Cell(int x, int y, Island island) {
         this.coordinate = new Coordinate(x, y);
-        this.animals = new CopyOnWriteArrayList<>();
-        this.plants = new CopyOnWriteArrayList<>();
+        this.island = island;
     }
 
     public Island getIsland() {
@@ -31,8 +30,18 @@ public class Cell {
     }
 
     public void addAnimal(Livable animal) {
-            animal.setCurrentCell(this);
+        long countOfSameType = animals.stream().filter(a -> a.getData() == animal.getData()).count();
+
+        if (countOfSameType < animal.getData().getMaxQuantity()) {
             animals.add(animal);
+            animal.setCurrentCell(this); // Устанавливаем ссылку на ячейку у животного
+        } else {
+            System.out.println("Cannot add " + animal.getData() + ": max quantity reached");
+        }
+    }
+
+    public void removeAnimal(Livable animal) {
+        animals.remove(animal);
     }
 
     public void addPlant(Plant plant) {

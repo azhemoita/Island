@@ -15,7 +15,7 @@ public class Island {
     private void initializeCells() {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                cells[x][y] = new Cell(x, y);
+                cells[x][y] = new Cell(x, y, this);
             }
         }
     }
@@ -43,4 +43,7 @@ public class Island {
         return cells;
     }
 
+//    public void setCell(int x, int y, Cell cell) {
+//
+//    }
 }

@@ -24,19 +24,31 @@ public class Bear extends Predator implements Livable {
     public static final int PROBABILITY_EATS_BUFFALO = 50;
     public static final int PROBABILITY_EATS_DUCK = 10;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight;
+    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.BEAR.getWeight());
 
-    public Bear(Cell currentCell) {
-        this.currentCell = currentCell;
-        this.currentWeight = new AtomicReference<>(Data.BEAR.getWeight());
+    @Override
+    public Data getData() {
+        return Data.BEAR;
     }
 
-    public Cell getCurrentCell() {
+    @Override
+    public Cell getCurrentcell() {
         return currentCell;
     }
 
-    public void setCurrentCell(Cell newCell) {
-        this.currentCell = newCell;
+    @Override
+    public void setCurrentCell(Cell cell) {
+        this.currentCell = cell;
+    }
+
+    @Override
+    public double getCurrentWeight() {
+        return currentWeight.get();
+    }
+
+    @Override
+    public void setCurrentWeight(double currentWeight) {
+        this.currentWeight.set(currentWeight);
     }
 
     @Override
@@ -145,6 +157,13 @@ public class Bear extends Predator implements Livable {
 
     @Override
     public void move() {
+        System.out.println("Медведь передвигается...");
+
+        if (currentCell == null) {
+            System.out.println("У медведя нет клетки!");
+            return;
+        }
+
         int maxSpeed = Data.BEAR.getMaxSpeed();
         int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
         Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
@@ -169,18 +188,37 @@ public class Bear extends Predator implements Livable {
             newCell.addAnimal(this);
             currentCell = newCell;
         }
+
+        Cell newCell = currentCell.getIsland().getCell(newX, newY);
+
+        // Синхронизация для атомарного перемещения
+        synchronized (currentCell) {
+            synchronized (newCell) {
+                if (currentCell.getAnimals().contains(this)) {
+                    currentCell.removeAnimal(this);
+                    newCell.addAnimal(this);
+                    this.currentCell = newCell;
+                    System.out.println("Bear moved to (" + newX + ", " + newY + ")");
+                }
+            }
+        }
     }
 
     @Override
     public void die() {
-        currentCell.getAnimals().remove(this);
+        if (currentCell != null) {
+            currentCell.removeAnimal(this);
+            System.out.println("Bear died at (" + currentCell.getCoordinate().getX()
+                    + ", " + currentCell.getCoordinate().getY() + ")");
+        }
     }
 
+    @Override
     public Optional<Livable> getOffspring() {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.BEAR.getMaxQuantity()) {
-            return Optional.of(new Bear(currentCell));
+            return Optional.of(new Bear());
         }
 
         return Optional.empty();

@@ -15,19 +15,31 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Caterpillar extends Herbivore implements Livable {
     public static final int PROBABILITY_EATS_PLANT = 100;
     private Cell currentCell;
-    private final AtomicReference<Double> currentWeight;
+    private final AtomicReference<Double> currentWeight = new AtomicReference<>(Data.CATERPILLAR.getWeight());
 
-    public Caterpillar(Cell currentCell) {
-        this.currentCell = currentCell;
-        this.currentWeight = new AtomicReference<>(Data.CATERPILLAR.getWeight());
+    @Override
+    public Data getData() {
+        return Data.CATERPILLAR;
     }
 
-    public Cell getCurrentCell() {
+    @Override
+    public Cell getCurrentcell() {
         return currentCell;
     }
 
-    public void setCurrentCell(Cell currentCell) {
-        this.currentCell = currentCell;
+    @Override
+    public void setCurrentCell(Cell cell) {
+        this.currentCell = cell;
+    }
+
+    @Override
+    public double getCurrentWeight() {
+        return currentWeight.get();
+    }
+
+    @Override
+    public void setCurrentWeight(double currentWeight) {
+        this.currentWeight.set(currentWeight);
     }
 
     @Override
@@ -53,6 +65,13 @@ public class Caterpillar extends Herbivore implements Livable {
 
     @Override
     public void move() {
+        System.out.println("Гусеница передвигается...");
+
+        if (currentCell == null) {
+            System.out.println("У гусеницы нет клетки!");
+            return;
+        }
+
         int maxSpeed = Data.CATERPILLAR.getMaxSpeed();
         int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
         Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
@@ -77,18 +96,37 @@ public class Caterpillar extends Herbivore implements Livable {
             newCell.addAnimal(this);
             currentCell = newCell;
         }
+
+        Cell newCell = currentCell.getIsland().getCell(newX, newY);
+
+        // Синхронизация для атомарного перемещения
+        synchronized (currentCell) {
+            synchronized (newCell) {
+                if (currentCell.getAnimals().contains(this)) {
+                    currentCell.removeAnimal(this);
+                    newCell.addAnimal(this);
+                    this.currentCell = newCell;
+                    System.out.println("Caterpillar moved to (" + newX + ", " + newY + ")");
+                }
+            }
+        }
     }
 
     @Override
     public void die() {
-        currentCell.getAnimals().remove(this);
+        if (currentCell != null) {
+            currentCell.removeAnimal(this);
+            System.out.println("Caterpillar died at (" + currentCell.getCoordinate().getX()
+                    + ", " + currentCell.getCoordinate().getY() + ")");
+        }
     }
 
+    @Override
     public Optional<Livable> getOffspring() {
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.CATERPILLAR.getMaxQuantity()) {
-            return Optional.of(new Caterpillar(currentCell));
+            return Optional.of(new Caterpillar());
         }
 
         return Optional.empty();
