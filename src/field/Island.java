@@ -44,6 +44,6 @@ public class Island {
     }
 
 //    public void setCell(int x, int y, Cell cell) {
-//
+//        cells[x][y]
 //    }
 }

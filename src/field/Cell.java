@@ -29,12 +29,10 @@ public class Cell {
         this.coordinate = coordinate;
     }
 
-    public void addAnimal(Livable animal) {
-        long countOfSameType = animals.stream().filter(a -> a.getData() == animal.getData()).count();
-
-        if (countOfSameType < animal.getData().getMaxQuantity()) {
+    public synchronized void addAnimal(Livable animal) {
+        if (animals.stream().filter(a -> a.getClass() == animal.getClass()).count() < animal.getData().getMaxQuantity()) {
             animals.add(animal);
-            animal.setCurrentCell(this); // Устанавливаем ссылку на ячейку у животного
+            animal.setCurrentCell(this);
         } else {
             System.out.println("Cannot add " + animal.getData() + ": max quantity reached");
         }
@@ -57,11 +55,4 @@ public class Cell {
     public List<Plant> getPlants() {
         return plants;
     }
-
-    /**
-     * TODO:
-     * Ячейка содержит:
-     * 1. Отображение текущего состояния игры. Должна выводиться статистика теущего состояния.
-     *
-     */
 }

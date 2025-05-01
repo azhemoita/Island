@@ -92,6 +92,7 @@ public class Boar extends Herbivore implements Livable {
     @Override
     public void move() {
         System.out.println("Кабан передвигается...");
+        Cell currentCell = this.getCurrentcell();
 
         if (currentCell == null) {
             System.out.println("У кабана нет клетки!");
@@ -100,7 +101,7 @@ public class Boar extends Herbivore implements Livable {
 
         int maxSpeed = Data.BOAR.getMaxSpeed();
         int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
-        Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
+        Coordinate currentCellCoordinate = currentCell.getCoordinate();
 
         if (speed == 0) return;
 
@@ -114,9 +115,9 @@ public class Boar extends Herbivore implements Livable {
         int newX = x + dx;
         int newY = y + dy;
 
-        if (newX == x && newY == y) return;
+//        if (newX == x && newY == y) return;
 
-        if (currentCell.getIsland().isValidCoordinate(newX, newY)) {
+        if (!currentCell.getIsland().isValidCoordinate(newX, newY)) {
             Cell newCell = currentCell.getIsland().getCell(newX, newY);
             currentCell.getAnimals().remove(this);
             newCell.addAnimal(this);
@@ -131,7 +132,7 @@ public class Boar extends Herbivore implements Livable {
                 if (currentCell.getAnimals().contains(this)) {
                     currentCell.removeAnimal(this);
                     newCell.addAnimal(this);
-                    this.currentCell = newCell;
+                    this.setCurrentCell(newCell);
                     System.out.println("Boar moved to (" + newX + ", " + newY + ")");
                 }
             }

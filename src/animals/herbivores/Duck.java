@@ -80,6 +80,7 @@ public class Duck extends Herbivore implements Livable {
     @Override
     public void move() {
         System.out.println("Утка передвигается...");
+        Cell currentCell = this.getCurrentcell();
 
         if (currentCell == null) {
             System.out.println("У утки нет клетки!");
@@ -88,7 +89,7 @@ public class Duck extends Herbivore implements Livable {
 
         int maxSpeed = Data.DUCK.getMaxSpeed();
         int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
-        Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
+        Coordinate currentCellCoordinate = currentCell.getCoordinate();
 
         if (speed == 0) return;
 
@@ -102,9 +103,9 @@ public class Duck extends Herbivore implements Livable {
         int newX = x + dx;
         int newY = y + dy;
 
-        if (newX == x && newY == y) return;
+//        if (newX == x && newY == y) return;
 
-        if (currentCell.getIsland().isValidCoordinate(newX, newY)) {
+        if (!currentCell.getIsland().isValidCoordinate(newX, newY)) {
             Cell newCell = currentCell.getIsland().getCell(newX, newY);
             currentCell.getAnimals().remove(this);
             newCell.addAnimal(this);
@@ -119,17 +120,12 @@ public class Duck extends Herbivore implements Livable {
                 if (currentCell.getAnimals().contains(this)) {
                     currentCell.removeAnimal(this);
                     newCell.addAnimal(this);
-                    this.currentCell = newCell;
+                    this.setCurrentCell(newCell);
                     System.out.println("Duck moved to (" + newX + ", " + newY + ")");
                 }
             }
         }
     }
-
-        /**
-         * ThreadLocalRandom. Проверяем currentQuantity. Если < maxQuantity,
-         * то создаём новую утку.
-         * */
 
     @Override
     public void die() {
