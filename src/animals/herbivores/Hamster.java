@@ -45,6 +45,8 @@ public class Hamster extends Herbivore implements Livable {
 
     @Override
     public void eat() {
+        System.out.println("Hamster at (" + currentCell.getCoordinate().getX()
+            + ", " + currentCell.getCoordinate().getY() + ") is eating...");
         List<Livable> animals = currentCell.getAnimals();
         List<Plant> plants = currentCell.getPlants();
 
@@ -52,7 +54,7 @@ public class Hamster extends Herbivore implements Livable {
             return;
         }
 
-        while (currentWeight.get() < Data.DUCK.getWeight()) {
+        while (currentWeight.get() < Data.HAMSTER.getWeight()) {
             List<Livable> caterpillars = animals.stream().filter(Caterpillar.class::isInstance).toList();
 
             if (caterpillars.isEmpty() && plants.isEmpty()) {
@@ -80,6 +82,7 @@ public class Hamster extends Herbivore implements Livable {
     @Override
     public void move() {
         System.out.println("Мышь передвигается...");
+        Cell currentCell = this.getCurrentcell();
 
         if (currentCell == null) {
             System.out.println("У мыши нет клетки!");
@@ -87,31 +90,26 @@ public class Hamster extends Herbivore implements Livable {
         }
 
         int maxSpeed = Data.HAMSTER.getMaxSpeed();
-        int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
-        Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
+        int speed = ThreadLocalRandom.current().nextInt(maxSpeed + 1);
 
         if (speed == 0) return;
 
-        int x = currentCellCoordinate.getX();
-        int y = currentCellCoordinate.getY();
+        Coordinate coord = currentCell.getCoordinate();
+        int x = coord.getX();
+        int y = coord.getY();
 
         int dx = ThreadLocalRandom.current().nextInt(-speed, speed + 1);
-        int randomSign = ThreadLocalRandom.current().nextBoolean() ? 1 : -1;
-        int dy = (speed - Math.abs(dx)) * randomSign;
+        int dy = (speed - Math.abs(dx)) * (ThreadLocalRandom.current().nextBoolean() ? 1 : -1);
 
         int newX = x + dx;
         int newY = y + dy;
 
         if (newX == x && newY == y) return;
 
+        Cell newCell = null;
         if (currentCell.getIsland().isValidCoordinate(newX, newY)) {
-            Cell newCell = currentCell.getIsland().getCell(newX, newY);
-            currentCell.getAnimals().remove(this);
-            newCell.addAnimal(this);
-            currentCell = newCell;
-        }
-
-        Cell newCell = currentCell.getIsland().getCell(newX, newY);
+            newCell = currentCell.getIsland().getCell(newX, newY);
+        } else return;
 
         // Синхронизация для атомарного перемещения
         synchronized (currentCell) {
@@ -119,7 +117,7 @@ public class Hamster extends Herbivore implements Livable {
                 if (currentCell.getAnimals().contains(this)) {
                     currentCell.removeAnimal(this);
                     newCell.addAnimal(this);
-                    this.currentCell = newCell;
+                    this.setCurrentCell(newCell);
                     System.out.println("Hamster moved to (" + newX + ", " + newY + ")");
                 }
             }
@@ -137,9 +135,11 @@ public class Hamster extends Herbivore implements Livable {
 
     @Override
     public Optional<Livable> getOffspring() {
+        System.out.println("Мышь пытается размножиться...");
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.HAMSTER.getMaxQuantity()) {
+            System.out.println("Мышь размножилась...");
             return Optional.of(new Hamster());
         }
 

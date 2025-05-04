@@ -19,7 +19,7 @@ public class Goat extends Herbivore implements Livable {
 
     @Override
     public Data getData() {
-        return Data.DUCK;
+        return Data.GOAT;
     }
 
     @Override
@@ -44,6 +44,8 @@ public class Goat extends Herbivore implements Livable {
 
     @Override
     public void eat() {
+        System.out.println("Goat at (" + currentCell.getCoordinate().getX()
+                + ", " + currentCell.getCoordinate().getY() + ") is eating...");
         List<Plant> plants = currentCell.getPlants();
 
         if (plants == null) return;
@@ -67,38 +69,34 @@ public class Goat extends Herbivore implements Livable {
     @Override
     public void move() {
         System.out.println("Коза передвигается...");
+        Cell currentCell = this.getCurrentcell();
 
         if (currentCell == null) {
             System.out.println("У козы нет клетки!");
             return;
         }
 
-        int maxSpeed = Data.DUCK.getMaxSpeed();
-        int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
-        Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
+        int maxSpeed = Data.GOAT.getMaxSpeed();
+        int speed = ThreadLocalRandom.current().nextInt(maxSpeed + 1);
 
         if (speed == 0) return;
 
-        int x = currentCellCoordinate.getX();
-        int y = currentCellCoordinate.getY();
+        Coordinate coord = currentCell.getCoordinate();
+        int x = coord.getX();
+        int y = coord.getY();
 
         int dx = ThreadLocalRandom.current().nextInt(-speed, speed + 1);
-        int randomSign = ThreadLocalRandom.current().nextBoolean() ? 1 : -1;
-        int dy = (speed - Math.abs(dx)) * randomSign;
+        int dy = (speed - Math.abs(dx)) * (ThreadLocalRandom.current().nextBoolean() ? 1 : -1);
 
         int newX = x + dx;
         int newY = y + dy;
 
         if (newX == x && newY == y) return;
 
+        Cell newCell = null;
         if (currentCell.getIsland().isValidCoordinate(newX, newY)) {
-            Cell newCell = currentCell.getIsland().getCell(newX, newY);
-            currentCell.getAnimals().remove(this);
-            newCell.addAnimal(this);
-            currentCell = newCell;
-        }
-
-        Cell newCell = currentCell.getIsland().getCell(newX, newY);
+            newCell = currentCell.getIsland().getCell(newX, newY);
+        } else return;
 
         // Синхронизация для атомарного перемещения
         synchronized (currentCell) {
@@ -106,7 +104,7 @@ public class Goat extends Herbivore implements Livable {
                 if (currentCell.getAnimals().contains(this)) {
                     currentCell.removeAnimal(this);
                     newCell.addAnimal(this);
-                    this.currentCell = newCell;
+                    this.setCurrentCell(newCell);
                     System.out.println("Goat moved to (" + newX + ", " + newY + ")");
                 }
             }

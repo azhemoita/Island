@@ -47,6 +47,8 @@ public class Snake extends Predator implements Livable {
 
     @Override
     public void eat() {
+        System.out.println("Snake at (" + currentCell.getCoordinate().getX()
+                + ", " + currentCell.getCoordinate().getY() + ") is eating...");
         List<Livable> animals = currentCell.getAnimals();
 
         if (animals == null) return;
@@ -98,6 +100,7 @@ public class Snake extends Predator implements Livable {
     @Override
     public void move() {
         System.out.println("Змея передвигается...");
+        Cell currentCell = this.getCurrentcell();
 
         if (currentCell == null) {
             System.out.println("У змеи нет клетки!");
@@ -105,31 +108,26 @@ public class Snake extends Predator implements Livable {
         }
 
         int maxSpeed = Data.SNAKE.getMaxSpeed();
-        int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
-        Coordinate currentCellCoordinate = this.currentCell.getCoordinate();
+        int speed = ThreadLocalRandom.current().nextInt(maxSpeed + 1);
 
         if (speed == 0) return;
 
-        int x = currentCellCoordinate.getX();
-        int y = currentCellCoordinate.getY();
+        Coordinate coord = currentCell.getCoordinate();
+        int x = coord.getX();
+        int y = coord.getY();
 
         int dx = ThreadLocalRandom.current().nextInt(-speed, speed + 1);
-        int randomSign = ThreadLocalRandom.current().nextBoolean() ? 1 : -1;
-        int dy = (speed - Math.abs(dx)) * randomSign;
+        int dy = (speed - Math.abs(dx)) * (ThreadLocalRandom.current().nextBoolean() ? 1 : -1);
 
         int newX = x + dx;
         int newY = y + dy;
 
         if (newX == x && newY == y) return;
 
+        Cell newCell = null;
         if (currentCell.getIsland().isValidCoordinate(newX, newY)) {
-            Cell newCell = currentCell.getIsland().getCell(newX, newY);
-            currentCell.getAnimals().remove(this);
-            newCell.addAnimal(this);
-            currentCell = newCell;
-        }
-
-        Cell newCell = currentCell.getIsland().getCell(newX, newY);
+            newCell = currentCell.getIsland().getCell(newX, newY);
+        } else return;
 
         // Синхронизация для атомарного перемещения
         synchronized (currentCell) {
@@ -137,7 +135,7 @@ public class Snake extends Predator implements Livable {
                 if (currentCell.getAnimals().contains(this)) {
                     currentCell.removeAnimal(this);
                     newCell.addAnimal(this);
-                    this.currentCell = newCell;
+                    this.setCurrentCell(newCell);
                     System.out.println("Snake moved to (" + newX + ", " + newY + ")");
                 }
             }
@@ -155,9 +153,11 @@ public class Snake extends Predator implements Livable {
 
     @Override
     public Optional<Livable> getOffspring() {
+        System.out.println("Змея пытается размножиться...");
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         if (count >= 2 && count < Data.SNAKE.getMaxQuantity()) {
+            System.out.println("Змея размножилась...");
             return Optional.of(new Snake());
         }
 

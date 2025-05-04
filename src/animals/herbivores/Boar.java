@@ -100,31 +100,26 @@ public class Boar extends Herbivore implements Livable {
         }
 
         int maxSpeed = Data.BOAR.getMaxSpeed();
-        int speed = ThreadLocalRandom.current().nextInt(0, maxSpeed + 1);
-        Coordinate currentCellCoordinate = currentCell.getCoordinate();
+        int speed = ThreadLocalRandom.current().nextInt(maxSpeed + 1);
 
         if (speed == 0) return;
 
-        int x = currentCellCoordinate.getX();
-        int y = currentCellCoordinate.getY();
+        Coordinate coord = currentCell.getCoordinate();
+        int x = coord.getX();
+        int y = coord.getY();
 
         int dx = ThreadLocalRandom.current().nextInt(-speed, speed + 1);
-        int randomSign = ThreadLocalRandom.current().nextBoolean() ? 1 : -1;
-        int dy = (speed - Math.abs(dx)) * randomSign;
+        int dy = (speed - Math.abs(dx)) * (ThreadLocalRandom.current().nextBoolean() ? 1 : -1);
 
         int newX = x + dx;
         int newY = y + dy;
 
-//        if (newX == x && newY == y) return;
+        if (newX == x && newY == y) return;
 
-        if (!currentCell.getIsland().isValidCoordinate(newX, newY)) {
-            Cell newCell = currentCell.getIsland().getCell(newX, newY);
-            currentCell.getAnimals().remove(this);
-            newCell.addAnimal(this);
-            currentCell = newCell;
-        }
-
-        Cell newCell = currentCell.getIsland().getCell(newX, newY);
+        Cell newCell = null;
+        if (currentCell.getIsland().isValidCoordinate(newX, newY)) {
+            newCell = currentCell.getIsland().getCell(newX, newY);
+        } else return;
 
         // Синхронизация для атомарного перемещения
         synchronized (currentCell) {
@@ -150,11 +145,12 @@ public class Boar extends Herbivore implements Livable {
 
     @Override
     public Optional<Livable> getOffspring() {
-        System.out.println("Количество кабанов увеличивается...");
+        System.out.println("Кабан пытается размножиться...");
         long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
 
         // count >= 2 - Исключаем митоз
         if (count >= 2 && count < Data.BOAR.getMaxQuantity()) {
+            System.out.println("Кабан размножился...");
             return Optional.of(new Boar());
         }
 
