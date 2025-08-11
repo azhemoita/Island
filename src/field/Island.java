@@ -42,8 +42,4 @@ public class Island {
     public Cell[][] getCells() {
         return cells;
     }
-
-//    public void setCell(int x, int y, Cell cell) {
-//        cells[x][y]
-//    }
 }

@@ -1,24 +1,50 @@
 package factory;
 
-import animals.predators.*;
-import data.Data;
-import field.Cell;
+import plants.Plant;
+import util.Console;
 
-public class Predator extends Animal {
-    private Cell currentCell;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
+
+public abstract class Predator extends Animal {
 
     @Override
-    public Livable reproduce(Data animalName) {
-        return switch (animalName) {
-            case WOLF -> new Wolf();
-            case SNAKE -> new Snake();
-            case EAGLE -> new Eagle();
-            case FOX -> new Fox();
-            case BEAR -> new Bear();
-            default -> {
-                System.out.println("There is no such predator");
-                yield null;
+    public void eat() {
+        Console.log(getClass().getSimpleName() + " at (" + getCurrentCell().getCoordinate().getX()
+                + ", " + getCurrentCell().getCoordinate().getY() + ") begins to eat...");
+
+        Map<Class<? extends Eatable>, Integer> diet = getData().getDiet();
+
+        if (diet == null || diet.isEmpty()) return;
+
+        currentCell.getAnimals().stream().forEach(animal->{
+            for (var entry : diet.entrySet()) {
+                if (animal.getClass().equals(entry.getKey())) {
+                    tryEat(animal, entry.getValue());
+                }
             }
-        };
+        });
+
+        currentCell.getPlants().stream().forEach(plant->{
+            for (var entry : diet.entrySet()) {
+                if (plant.getClass().equals(entry.getKey())) {
+                    tryEat(plant, entry.getValue());
+                }
+            }
+        });
+    }
+
+    private void tryEat(Eatable food, int probability) {
+        boolean isEat = ThreadLocalRandom.current().nextInt(100) < probability;
+
+        if (isEat) {
+            setCurrentWeight(getCurrentWeight() + food.getWeight());
+
+            if (food instanceof Livable animal) {
+                animal.die();
+            } else if (food instanceof Plant plant) {
+                plant.die();
+            }
+        }
     }
 }

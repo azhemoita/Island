@@ -7,7 +7,6 @@ import field.Cell;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class AnimalFactory {
@@ -51,8 +50,7 @@ public class AnimalFactory {
             case WOLF -> new Wolf();
             default -> throw new IllegalArgumentException("Unknown animal: " + animalType);
         };
-        // Инициализация текущего веса
-//        animal.getCurrentWeight().set(animalType.getWeight());
+
         animal.setCurrentWeight(animal.getCurrentWeight());
         return animal;
     }

@@ -2,6 +2,7 @@ package field;
 
 import factory.Livable;
 import plants.Plant;
+import util.Console;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -34,7 +35,7 @@ public class Cell {
             animals.add(animal);
             animal.setCurrentCell(this);
         } else {
-            System.out.println("Cannot add " + animal.getData() + ": max quantity reached");
+            Console.log("Невозможно добавить животное " + animal.getData() + ". В клетке их уже максимальноле количество.");
         }
     }
 

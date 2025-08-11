@@ -1,37 +1,24 @@
 package animals.herbivores;
 
+import util.Console;
 import data.Data;
 import factory.Herbivore;
 import factory.Livable;
-import field.Cell;
-import field.Coordinate;
 import plants.Plant;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Boar extends Herbivore implements Livable {
-    public static final int PROBABILITY_EATS_HAMSTER = 50;
+public class Boar extends Herbivore {
+    public static final int PROBABILITY_EATS_HAMSTER =  50;
     public static final int PROBABILITY_EATS_CATERPILLAR = 90;
     public static final int PROBABILITY_EATS_PLANT = 100;
-    private Cell currentCell;
     private AtomicReference<Double> currentWeight = new AtomicReference<>(Data.BOAR.getWeight());
 
     @Override
     public Data getData() {
         return Data.BOAR;
-    }
-
-    @Override
-    public Cell getCurrentcell() {
-        return currentCell;
-    }
-
-    @Override
-    public void setCurrentCell(Cell cell) {
-        this.currentCell = cell;
     }
 
     @Override
@@ -46,10 +33,11 @@ public class Boar extends Herbivore implements Livable {
 
     @Override
     public void eat() {
-        System.out.println("Boar at (" + currentCell.getCoordinate().getX()
-                + ", " + currentCell.getCoordinate().getY() + ") is eating...");
-        List<Livable> animals = currentCell.getAnimals();
-        List<Plant> plants = currentCell.getPlants();
+        Console.log("Кабан на клетке (" + getCurrentCell().getCoordinate().getX()
+                + ", " + getCurrentCell().getCoordinate().getY() + ") ест");
+
+        List<Livable> animals = getCurrentCell().getAnimals();
+        List<Plant> plants = getCurrentCell().getPlants();
 
         if (animals == null || plants == null) {
             return;
@@ -83,77 +71,9 @@ public class Boar extends Herbivore implements Livable {
                 boolean isEat = ThreadLocalRandom.current().nextInt(0, 100) < PROBABILITY_EATS_PLANT;
                 if (isEat) {
                     currentWeight.updateAndGet(w -> w + Plant.WEIGHT);
-                    currentCell.getPlants().remove(plant);
+                    getCurrentCell().getPlants().remove(plant);
                 }
             });
         }
-    }
-
-    @Override
-    public void move() {
-        System.out.println("Кабан передвигается...");
-        Cell currentCell = this.getCurrentcell();
-
-        if (currentCell == null) {
-            System.out.println("У кабана нет клетки!");
-            return;
-        }
-
-        int maxSpeed = Data.BOAR.getMaxSpeed();
-        int speed = ThreadLocalRandom.current().nextInt(maxSpeed + 1);
-
-        if (speed == 0) return;
-
-        Coordinate coord = currentCell.getCoordinate();
-        int x = coord.getX();
-        int y = coord.getY();
-
-        int dx = ThreadLocalRandom.current().nextInt(-speed, speed + 1);
-        int dy = (speed - Math.abs(dx)) * (ThreadLocalRandom.current().nextBoolean() ? 1 : -1);
-
-        int newX = x + dx;
-        int newY = y + dy;
-
-        if (newX == x && newY == y) return;
-
-        Cell newCell = null;
-        if (currentCell.getIsland().isValidCoordinate(newX, newY)) {
-            newCell = currentCell.getIsland().getCell(newX, newY);
-        } else return;
-
-        // Синхронизация для атомарного перемещения
-        synchronized (currentCell) {
-            synchronized (newCell) {
-                if (currentCell.getAnimals().contains(this)) {
-                    currentCell.removeAnimal(this);
-                    newCell.addAnimal(this);
-                    this.setCurrentCell(newCell);
-                    System.out.println("Boar moved to (" + newX + ", " + newY + ")");
-                }
-            }
-        }
-    }
-
-    @Override
-    public void die() {
-        if (currentCell != null) {
-            currentCell.removeAnimal(this);
-            System.out.println("Boar died at (" + currentCell.getCoordinate().getX()
-                    + ", " + currentCell.getCoordinate().getY() + ")");
-        }
-    }
-
-    @Override
-    public Optional<Livable> getOffspring() {
-        System.out.println("Кабан пытается размножиться...");
-        long count = currentCell.getAnimals().stream().filter(animal -> animal.getClass().equals(this.getClass())).count();
-
-        // count >= 2 - Исключаем митоз
-        if (count >= 2 && count < Data.BOAR.getMaxQuantity()) {
-            System.out.println("Кабан размножился...");
-            return Optional.of(new Boar());
-        }
-
-        return Optional.empty();
     }
 }
